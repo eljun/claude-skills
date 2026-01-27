@@ -1,6 +1,6 @@
 ---
 name: implement
-description: Implement tasks from docs/task/*.md. Reads the task document, follows implementation steps, and updates status in TASKS.md. Use after /plan has created a task document.
+description: Implement tasks from docs/task/*.md. Reads the task document, follows implementation steps, and updates status in TASKS.md. Use "/implement auto {task}" to auto-chain through test → document → ship.
 model: opus
 ---
 
@@ -17,17 +17,44 @@ Invoke `/implement {task-name}` when:
 
 **Example:** `/implement dashboard-redesign`
 
+## Invocation Options
+
+| Command | Mode | Behavior |
+|---------|------|----------|
+| `/implement {task-name}` | Manual | Implement, then notify user to run `/test` |
+| `/implement auto {task-name}` | Automated | Implement, then auto-chain through test → document → ship |
+
+### Auto Mode
+
+When invoked with `auto`, the implement skill:
+1. Sets `Automation: auto` in the task document (overrides any existing value)
+2. Implements the task as normal
+3. After completion, automatically spawns `/test {task-name}` (haiku)
+4. The pipeline continues: test → document → ship
+
+This lets you skip `/plan auto` and trigger the full pipeline from implement:
+```
+/implement auto {task-name} → implement code
+    ↓
+/test (haiku)
+    │
+PASS → /document → /ship → PR + notify
+FAIL → /implement (with test report) → retry
+```
+
 ## Workflow
 
 ```
-/implement {task-name}
+/implement [auto] {task-name}
        ↓
-1. Read docs/task/{task-name}.md
-2. Check Automation field (manual | auto)
-3. Move task to "## In Progress" in TASKS.md
-4. Invoke specialized skills as needed
-5. Implement following task document steps
-6. Update status to "TESTING" when complete
+1. Parse arguments: detect "auto" flag
+2. Read docs/task/{task-name}.md
+3. If "auto" flag → set Automation: auto in task doc
+4. Check Automation field (manual | auto)
+5. Move task to "## In Progress" in TASKS.md
+6. Invoke specialized skills as needed
+7. Implement following task document steps
+8. Update status to "TESTING" when complete
        ↓
 ┌─── Automation Mode? ───┐
 │                        │
@@ -38,13 +65,25 @@ Ready for /test
 
 ## Auto Mode Behavior
 
-When task document has `Automation: auto`:
+When invoked with `/implement auto {task-name}` OR task document has `Automation: auto`:
 
-After implementation completes, automatically invoke `/test {task-name}`.
+1. If invoked with `auto` argument, update the task document to set `Automation: auto`
+2. After implementation completes, automatically invoke `/test {task-name}`
 
 ## Pre-Implementation Checklist
 
 Before writing ANY code:
+
+### 0. Parse Arguments
+
+Check if `auto` was passed in the invocation:
+- `/implement auto {task-name}` → Set `Automation: auto` in `docs/task/{task-name}.md`
+- `/implement {task-name}` → Leave automation field as-is (respect existing value)
+
+If `auto` is detected, update the task document header:
+```markdown
+> **Automation:** auto
+```
 
 ### 1. Read the Task Document
 ```
