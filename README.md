@@ -554,7 +554,7 @@ Common specialized skills you might want to add:
 - Be specific in test reports
 
 ### For Documentation (`/document`)
-- Follow the templates in `docs/templates/`
+- Follow the templates defined in the `/document` skill
 - Verify file paths exist
 - Include both developer and user perspectives
 - Keep it concise (feature: 200-400 lines, guide: 100-200 lines)

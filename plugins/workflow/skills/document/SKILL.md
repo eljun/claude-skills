@@ -74,9 +74,9 @@ docs/testing/{task-name}.md     - Test results & verification
 
 ### 3. Use Templates
 
-Always follow templates in `docs/templates/`:
-- `FEATURE_TEMPLATE.md` - Technical feature docs
-- `USER_GUIDE_TEMPLATE.md` - User-facing guides
+Follow the templates defined in this document:
+- **Feature Documentation Structure** - Technical feature docs (see below)
+- **User Guide Structure** - User-facing guides (see below)
 
 ---
 

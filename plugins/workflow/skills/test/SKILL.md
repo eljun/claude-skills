@@ -366,52 +366,145 @@ Use Task tool: `Task({ subagent_type: "general-purpose", model: "opus", prompt: 
 
 For testing account registration, email verification, password reset, and email notifications using temporary email services.
 
-### Supported Email Services
+**CRITICAL:** Tests involving email verification, account activation, password reset, or any email-dependent flow MUST NOT be marked as PASS until the email verification is confirmed working. If email testing fails due to service limits, mark the test as **BLOCKED** and notify the user to take action.
 
-| Service | Domain | Inbox URL | Best For |
-|---------|--------|-----------|----------|
-| **Mailinator** | `@mailinator.com` | `mailinator.com/v4/public/inboxes.jsp?to={name}` | Primary choice - reliable, no signup |
-| **Guerrilla Mail** | Dynamic | `guerrillamail.com` | Alternative if Mailinator blocked |
-| **TempMail** | Dynamic | `temp-mail.org` | Backup option |
+### Supported Email Services (Priority Order)
+
+| Priority | Service | Method | Domain | Best For |
+|----------|---------|--------|--------|----------|
+| 1st | **Mail.tm** | API | Dynamic (`@mail.tm`, etc.) | Primary - high limits, API-based |
+| 2nd | **Mailinator** | Browser | `@mailinator.com` | Fallback - no signup required |
+| 3rd | **Guerrilla Mail** | Browser | Dynamic | Fallback if others blocked |
+| 4th | **TempMail** | Browser | Dynamic | Last resort |
+
+**Always start with Mail.tm.** Only fall back to other services if Mail.tm returns rate limit errors (HTTP 429) or account creation fails.
 
 ### Email Testing Workflow
 
 ```
-1. Generate unique test email
-2. Navigate to registration page
-3. Fill registration form with test email
-4. Navigate to email inbox
-5. Wait for & extract verification link
-6. Complete verification
+1. Create temporary email via Mail.tm API
+2. Navigate to registration/action page
+3. Fill form with temporary email
+4. Poll Mail.tm API for incoming email
+5. Extract verification link from email
+6. Complete verification flow
 7. Verify account is active
+8. Include email test results in report
 ```
 
-### Generating Test Emails
+---
 
-Use a unique identifier to avoid inbox collisions:
+### Mail.tm API Reference (Primary Service)
 
-```typescript
-// Pattern: test-{timestamp}-{random}@mailinator.com
-const testEmail = `test-${Date.now()}-${Math.random().toString(36).slice(2, 6)}@mailinator.com`;
-// Example: test-1706234567890-x7k2@mailinator.com
+Mail.tm provides a REST API for creating temporary emails and retrieving messages.
+
+**Base URL:** `https://api.mail.tm`
+
+#### Step 1: Get Available Domain
+
+```bash
+# Get list of available domains
+curl https://api.mail.tm/domains
+
+# Response example:
+# { "hydra:member": [{ "id": "...", "domain": "mail.tm" }] }
 ```
+
+#### Step 2: Create Temporary Account
+
+```bash
+# Create account with random address
+curl -X POST https://api.mail.tm/accounts \
+  -H "Content-Type: application/json" \
+  -d '{
+    "address": "test-1706234567890@mail.tm",
+    "password": "TestPassword123!"
+  }'
+
+# Response: { "id": "...", "address": "test-...@mail.tm" }
+```
+
+#### Step 3: Get Authentication Token
+
+```bash
+# Get JWT token for API access
+curl -X POST https://api.mail.tm/token \
+  -H "Content-Type: application/json" \
+  -d '{
+    "address": "test-1706234567890@mail.tm",
+    "password": "TestPassword123!"
+  }'
+
+# Response: { "token": "eyJ..." }
+```
+
+#### Step 4: Poll for Messages
+
+```bash
+# Check inbox (poll every 3-5 seconds)
+curl https://api.mail.tm/messages \
+  -H "Authorization: Bearer {token}"
+
+# Response: { "hydra:member": [{ "id": "...", "subject": "...", "from": {...} }] }
+```
+
+#### Step 5: Get Message Content
+
+```bash
+# Get full message with HTML content
+curl https://api.mail.tm/messages/{messageId} \
+  -H "Authorization: Bearer {token}"
+
+# Response includes: { "html": "<html>...", "text": "..." }
+# Extract verification link from html or text field
+```
+
+---
 
 ### Step-by-Step: Account Registration Test
 
-#### Step 1: Navigate to Registration Page
+#### Step 1: Create Mail.tm Account via Bash
+
+```bash
+# Generate unique email address
+TIMESTAMP=$(date +%s)
+RANDOM_STR=$(head /dev/urandom | tr -dc a-z0-9 | head -c 4)
+TEST_EMAIL="test-${TIMESTAMP}-${RANDOM_STR}@mail.tm"
+TEST_PASSWORD="TestPassword123!"
+
+# Get available domain (verify mail.tm is available)
+curl -s https://api.mail.tm/domains | jq '.["hydra:member"][0].domain'
+
+# Create the temporary email account
+curl -s -X POST https://api.mail.tm/accounts \
+  -H "Content-Type: application/json" \
+  -d "{\"address\": \"${TEST_EMAIL}\", \"password\": \"${TEST_PASSWORD}\"}"
+
+# Get authentication token
+TOKEN=$(curl -s -X POST https://api.mail.tm/token \
+  -H "Content-Type: application/json" \
+  -d "{\"address\": \"${TEST_EMAIL}\", \"password\": \"${TEST_PASSWORD}\"}" \
+  | jq -r '.token')
+
+echo "Test email: ${TEST_EMAIL}"
+echo "Token: ${TOKEN}"
+```
+
+#### Step 2: Navigate to Registration Page
 
 ```typescript
 mcp__playwright__browser_navigate({ url: "http://localhost:3000/register" })
 mcp__playwright__browser_snapshot()
 ```
 
-#### Step 2: Fill Registration Form
+#### Step 3: Fill Registration Form
 
 ```typescript
 // Get element refs from snapshot, then fill form
+// Use the TEST_EMAIL created in Step 1
 mcp__playwright__browser_fill_form({
   fields: [
-    { name: "Email", type: "textbox", ref: "input[email]", value: testEmail },
+    { name: "Email", type: "textbox", ref: "input[email]", value: TEST_EMAIL },
     { name: "Password", type: "textbox", ref: "input[password]", value: "TestPassword123!" },
     { name: "Confirm Password", type: "textbox", ref: "input[confirmPassword]", value: "TestPassword123!" }
   ]
@@ -419,136 +512,171 @@ mcp__playwright__browser_fill_form({
 mcp__playwright__browser_click({ ref: "button[Submit]", element: "Submit button" })
 ```
 
-#### Step 3: Navigate to Mailinator Inbox
+#### Step 4: Poll Mail.tm for Verification Email
 
-```typescript
-// Extract the inbox name from email (part before @)
-const inboxName = testEmail.split('@')[0];
-mcp__playwright__browser_navigate({
-  url: `https://www.mailinator.com/v4/public/inboxes.jsp?to=${inboxName}`
-})
-```
+```bash
+# Poll for messages (repeat every 5 seconds, up to 60 seconds)
+for i in {1..12}; do
+  MESSAGES=$(curl -s https://api.mail.tm/messages \
+    -H "Authorization: Bearer ${TOKEN}")
 
-#### Step 4: Wait for Email & Open It
+  COUNT=$(echo $MESSAGES | jq '.["hydra:member"] | length')
 
-```typescript
-// Wait for email to arrive (may take a few seconds)
-mcp__playwright__browser_wait_for({ time: 5 })
-mcp__playwright__browser_snapshot()
+  if [ "$COUNT" -gt "0" ]; then
+    echo "Email received!"
+    MESSAGE_ID=$(echo $MESSAGES | jq -r '.["hydra:member"][0].id')
+    break
+  fi
 
-// Click on the email row (look for email from your app)
-mcp__playwright__browser_click({ ref: "row[YourApp]", element: "Email from YourApp" })
-mcp__playwright__browser_snapshot()
+  echo "Waiting for email... attempt $i/12"
+  sleep 5
+done
 ```
 
 #### Step 5: Extract Verification Link
 
-```typescript
-// The email content loads in an iframe - take snapshot to see content
-mcp__playwright__browser_snapshot()
+```bash
+# Get full message content
+MESSAGE=$(curl -s https://api.mail.tm/messages/${MESSAGE_ID} \
+  -H "Authorization: Bearer ${TOKEN}")
 
-// Look for verification link in the email body
-// The link format depends on your auth provider (Supabase: /auth/confirm?token=...)
-// Click the verification link or extract URL
+# Extract verification link from HTML content
+# Adjust the grep pattern based on your auth provider
+VERIFY_LINK=$(echo $MESSAGE | jq -r '.html' | grep -oP 'href="\K[^"]*confirm[^"]*' | head -1)
 
-// Option A: Click link directly if visible
-mcp__playwright__browser_click({ ref: "link[Verify]", element: "Verification link" })
+# Or from text content
+VERIFY_LINK=$(echo $MESSAGE | jq -r '.text' | grep -oP 'https?://[^\s]*confirm[^\s]*' | head -1)
 
-// Option B: Use evaluate to extract href if needed
-mcp__playwright__browser_evaluate({
-  function: "() => { return document.querySelector('a[href*=\"confirm\"]')?.href }"
-})
+echo "Verification link: ${VERIFY_LINK}"
 ```
 
 #### Step 6: Complete Verification
 
 ```typescript
-// After clicking verification link, verify success
+// Navigate to the verification link
+mcp__playwright__browser_navigate({ url: VERIFY_LINK })
 mcp__playwright__browser_snapshot()
 // Should see success message or redirect to dashboard
 ```
 
+---
+
 ### Password Reset Testing
 
-```typescript
-// 1. Navigate to forgot password
-mcp__playwright__browser_navigate({ url: "http://localhost:3000/forgot-password" })
-mcp__playwright__browser_snapshot()
+```bash
+# 1. Use the same Mail.tm account created earlier
+# 2. Trigger password reset in the app
+# 3. Poll for reset email
+MESSAGES=$(curl -s https://api.mail.tm/messages \
+  -H "Authorization: Bearer ${TOKEN}")
 
-// 2. Enter test email
-mcp__playwright__browser_type({ ref: "input[email]", text: testEmail })
-mcp__playwright__browser_click({ ref: "button[Reset]", element: "Reset password button" })
+MESSAGE_ID=$(echo $MESSAGES | jq -r '.["hydra:member"][0].id')
 
-// 3. Check Mailinator for reset email
-mcp__playwright__browser_navigate({
-  url: `https://www.mailinator.com/v4/public/inboxes.jsp?to=${inboxName}`
-})
-mcp__playwright__browser_wait_for({ time: 5 })
-mcp__playwright__browser_snapshot()
+# 4. Extract reset link
+MESSAGE=$(curl -s https://api.mail.tm/messages/${MESSAGE_ID} \
+  -H "Authorization: Bearer ${TOKEN}")
 
-// 4. Open reset email and click link
-mcp__playwright__browser_click({ ref: "row[Password Reset]", element: "Password reset email" })
-mcp__playwright__browser_snapshot()
-
-// 5. Extract and navigate to reset link
-// 6. Set new password and verify
+RESET_LINK=$(echo $MESSAGE | jq -r '.html' | grep -oP 'href="\K[^"]*reset[^"]*' | head -1)
 ```
+
+---
 
 ### Email Notification Testing
 
 For testing transactional emails (booking confirmations, notifications, etc.):
 
-```typescript
-// 1. Trigger the action that sends email (e.g., make a booking)
-mcp__playwright__browser_navigate({ url: "http://localhost:3000/book" })
-// ... complete booking flow ...
+```bash
+# 1. Trigger the action that sends email (e.g., make a booking via Playwright)
+# 2. Poll Mail.tm for notification (may take longer)
+for i in {1..24}; do  # Up to 2 minutes
+  MESSAGES=$(curl -s https://api.mail.tm/messages \
+    -H "Authorization: Bearer ${TOKEN}")
 
-// 2. Check inbox for notification
+  # Look for specific subject
+  NOTIFICATION=$(echo $MESSAGES | jq -r '.["hydra:member"][] | select(.subject | contains("Booking"))')
+
+  if [ -n "$NOTIFICATION" ]; then
+    echo "Notification received!"
+    break
+  fi
+
+  sleep 5
+done
+
+# 3. Verify email content
+MESSAGE_ID=$(echo $NOTIFICATION | jq -r '.id')
+MESSAGE=$(curl -s https://api.mail.tm/messages/${MESSAGE_ID} \
+  -H "Authorization: Bearer ${TOKEN}")
+
+# Validate content
+echo $MESSAGE | jq '.html' | grep -q "booking details" && echo "Content valid"
+```
+
+---
+
+### Fallback: When Mail.tm Hits Rate Limits
+
+If Mail.tm returns HTTP 429 (Too Many Requests) or account creation fails:
+
+#### Fallback to Mailinator (Browser-based)
+
+```typescript
+// Generate Mailinator email (no account creation needed)
+const testEmail = `test-${Date.now()}@mailinator.com`;
+const inboxName = testEmail.split('@')[0];
+
+// After triggering email, navigate to inbox
 mcp__playwright__browser_navigate({
   url: `https://www.mailinator.com/v4/public/inboxes.jsp?to=${inboxName}`
 })
-mcp__playwright__browser_wait_for({ time: 10 }) // Notifications may take longer
+mcp__playwright__browser_wait_for({ time: 10 })
 mcp__playwright__browser_snapshot()
 
-// 3. Verify email content
-mcp__playwright__browser_click({ ref: "row[Booking Confirmation]", element: "Confirmation email" })
+// Click on email row and extract link
+mcp__playwright__browser_click({ ref: "row[YourApp]", element: "Email from app" })
+mcp__playwright__browser_snapshot()
+```
+
+#### Fallback to Guerrilla Mail (Browser-based)
+
+```typescript
+// Navigate to Guerrilla Mail
+mcp__playwright__browser_navigate({ url: "https://www.guerrillamail.com/" })
 mcp__playwright__browser_snapshot()
 
-// 4. Validate email contains expected content
-// - Booking details
-// - Correct dates/times
-// - Links work
+// Get the generated email address from the page
+// Use this address for registration
+// Check inbox on the same page for incoming emails
 ```
 
-### Handling Mailinator's Interface
-
-Mailinator's UI structure:
-
-```
-Page Structure:
-├── Search/Filter bar
-├── Inbox table
-│   ├── Row 1: [From] [Subject] [Time]
-│   ├── Row 2: [From] [Subject] [Time]
-│   └── ...
-└── Email content iframe (when email selected)
-```
-
-**Tips:**
-- Take snapshot after navigation to get current refs
-- Emails appear in reverse chronological order (newest first)
-- Email content loads in an iframe - may need to interact with iframe
-- If inbox is empty, wait and refresh
+---
 
 ### Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
-| Email not arriving | Wait longer (up to 30s), check spam folder in Mailinator |
-| Mailinator blocked | Use Guerrilla Mail or TempMail as alternative |
-| Can't click email link | Extract URL with `browser_evaluate` and navigate directly |
-| Wrong inbox | Verify inbox name matches email prefix exactly |
-| Supabase rate limiting | Use different test emails, wait between tests |
+| Mail.tm 429 error | Switch to Mailinator fallback |
+| Mail.tm account creation fails | Try different domain from /domains endpoint |
+| Email not arriving (60s+) | Check spam, verify email was sent, try fallback |
+| Mailinator rate limited | Switch to Guerrilla Mail |
+| All services failing | Mark test as BLOCKED, notify user |
+| Can't extract link | Check HTML/text parsing, adjust regex pattern |
+| Supabase rate limiting | Wait 60s between tests, use different emails |
+
+### When to Mark Test as BLOCKED
+
+Mark the test as **BLOCKED** (not FAIL) when:
+- All email services are rate-limited
+- Cannot create temporary email account
+- Email never arrives after 2+ minutes across multiple services
+
+```markdown
+**Result:** BLOCKED
+**Reason:** Email service rate limits reached
+**Action Required:** User must manually verify email flow or wait for rate limits to reset
+```
+
+---
 
 ### Test Report: Email Authentication Section
 
@@ -557,20 +685,27 @@ Add to test report when testing auth flows:
 ```markdown
 ### Authentication Tests
 
-| Test | Email Used | Result | Notes |
-|------|------------|--------|-------|
-| Registration | test-xxx@mailinator.com | PASS/FAIL | {Details} |
-| Email verification | (same) | PASS/FAIL | Link received in Xs |
-| Password reset | (same) | PASS/FAIL | {Details} |
-| Login after verify | (same) | PASS/FAIL | {Details} |
+| Test | Email Service | Email Used | Result | Notes |
+|------|---------------|------------|--------|-------|
+| Registration | Mail.tm | test-xxx@mail.tm | PASS/FAIL/BLOCKED | {Details} |
+| Email verification | Mail.tm | (same) | PASS/FAIL/BLOCKED | Link received in Xs |
+| Password reset | Mail.tm | (same) | PASS/FAIL/BLOCKED | {Details} |
+| Login after verify | - | (same) | PASS/FAIL | {Details} |
 
 ### Email Delivery
 
-| Email Type | Received | Time | Content Valid |
-|------------|----------|------|---------------|
-| Verification | Yes/No | Xs | Yes/No |
-| Password Reset | Yes/No | Xs | Yes/No |
-| Booking Confirm | Yes/No | Xs | Yes/No |
+| Email Type | Service Used | Received | Time | Content Valid |
+|------------|--------------|----------|------|---------------|
+| Verification | Mail.tm | Yes/No | Xs | Yes/No |
+| Password Reset | Mail.tm | Yes/No | Xs | Yes/No |
+| Booking Confirm | Mail.tm | Yes/No | Xs | Yes/No |
+
+### Service Fallback Log (if applicable)
+
+| Attempt | Service | Result | Error |
+|---------|---------|--------|-------|
+| 1 | Mail.tm | Failed | 429 Too Many Requests |
+| 2 | Mailinator | Success | - |
 ```
 
 ---
