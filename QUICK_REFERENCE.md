@@ -11,10 +11,14 @@
 /plugin install react-best-practices@your-username/claude-skills
 /plugin install postgres-best-practices@your-username/claude-skills
 
-# 3. Create docs folders in your project
+# 3. Configure Playwright MCP for /test (required)
+# Add to your project's .mcp.json:
+# { "mcpServers": { "playwright": { "command": "npx", "args": ["@anthropic-ai/mcp-playwright"] } } }
+
+# 4. Create docs folders in your project
 mkdir -p docs/task docs/testing docs/features docs/guides docs/changelogs
 
-# 4. Download TASKS.md template
+# 5. Download TASKS.md template
 curl -o TASKS.md https://raw.githubusercontent.com/your-username/claude-skills/main/TASKS.md
 ```
 
@@ -35,6 +39,7 @@ curl -o TASKS.md https://raw.githubusercontent.com/your-username/claude-skills/m
 | `/plan` | opus | Plan new feature/fix (manual mode) | `docs/task/*.md` |
 | `/plan auto` | opus | Plan + full automation after approval | Auto pipeline |
 | `/implement {task}` | opus | Code the task | Working feature |
+| `/implement auto {task}` | opus | Code + auto-chain through pipeline | Auto pipeline |
 | `/test {task}` | haiku | Run web E2E tests (Playwright) | `docs/testing/*.md` |
 | `/document {task}` | haiku | Update docs | `docs/features/*.md` |
 | `/ship {task}` | haiku | Create PR | Pull Request |
@@ -43,7 +48,8 @@ curl -o TASKS.md https://raw.githubusercontent.com/your-username/claude-skills/m
 ## Auto Mode
 
 ```bash
-/plan auto    # After approval: implement → test → document → ship (automatic)
+/plan auto              # After approval: implement → test → document → ship (automatic)
+/implement auto {task}  # Skip planning: test → document → ship (task doc must exist)
 ```
 
 **Full automation** through the pipeline
@@ -131,6 +137,10 @@ See README.md "Adding New Specialized Skills" for full template.
 # New feature (auto - hands-off after approval)
 /plan auto
 # Approve the plan → automation handles the rest
+
+# Auto implement (task doc already exists, skip planning)
+/implement auto my-feature
+# → implement → test → document → ship (automatic)
 
 # Quick fix
 /plan  # (set Type: bugfix, Version Impact: patch)

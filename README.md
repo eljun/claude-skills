@@ -33,7 +33,7 @@ This installs the core workflow skills:
 
 ### Step 2: Install Companion Skills (Recommended)
 
-The workflow skills reference these specialized skills for React/Next.js and Supabase/PostgreSQL projects. They are **optional but recommended**.
+The workflow skills reference these specialized skills for React/Next.js and Supabase/PostgreSQL projects. Installation is **optional but recommended**. Once installed, the workflow skills will **always invoke them** — they are not skippable.
 
 Run these commands in your **project directory**:
 
@@ -60,7 +60,28 @@ For each command, follow the prompts:
 
 When installed, the workflow skills (`/plan`, `/implement`, etc.) will automatically reference these during relevant tasks.
 
-### Step 3: Project Setup
+### Step 3: Configure Playwright MCP (Required for `/test`)
+
+The `/test` skill requires the **Playwright MCP server** for browser-based E2E testing. Without it, tests will silently fall back to curl/code inspection instead of real browser automation.
+
+Add this to your project's `.mcp.json` (create the file if it doesn't exist):
+
+```json
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["@anthropic-ai/mcp-playwright"]
+    }
+  }
+}
+```
+
+Or add it globally via Claude Code settings if you want it available across all projects.
+
+> **How to verify:** Run `/test` and check that the test report mentions actual browser interactions (snapshots, clicks, screenshots) rather than curl commands or source code inspection.
+
+### Step 4: Project Setup
 
 Create the required folders in your project:
 
@@ -90,6 +111,10 @@ mkdir -p docs/task docs/testing docs/features docs/guides docs/changelogs
 # Auto Mode - Full automation after plan approval
 /plan auto
 # → After you approve, runs: implement → test → document → ship automatically
+
+# Auto Mode - Skip planning, auto-chain from implement
+/implement auto {task-name}
+# → Task doc must exist. Runs: implement → test → document → ship automatically
 ```
 
 ---
@@ -113,14 +138,14 @@ docs/task/    In Progress     Testing       Approved      Ready to      Shipped
 - After `/document` → **You decide** when to `/ship`
 - After `/ship` → **You decide** when to `/release`
 
-### Auto Mode (`/plan auto`)
+### Auto Mode (`/plan auto` or `/implement auto`)
 
 ```
-/plan auto → User approves plan
-    ↓
-/implement
-    ↓
-/test (Playwright E2E)
+/plan auto → User approves plan       /implement auto {task}
+    ↓                                        ↓
+/implement                             Implement code
+    ↓                                        ↓
+/test (Playwright E2E) ←─────────────── /test (Playwright E2E)
     │
 PASS → /document
 FAIL → /implement (with test report)
@@ -130,7 +155,8 @@ FAIL → /implement (with test report)
 ```
 
 **Auto Mode Features:**
-- **Full automation:** Runs through the entire pipeline automatically
+- **Two entry points:** Start from `/plan auto` (full pipeline) or `/implement auto` (skip planning)
+- **Full automation:** Runs through the remaining pipeline automatically
 - **Test failures:** Auto-retries by sending test report back to implement
 - **PR creation:** Creates PR and notifies you - you decide when to merge
 
@@ -186,6 +212,12 @@ Claude: /plan
 
 **Input:** Task name from TASKS.md
 
+**Options:**
+| Command | Behavior |
+|---------|----------|
+| `/implement {task}` | Implement, then notify user to run `/test` |
+| `/implement auto {task}` | Implement, then auto-chain: test → document → ship |
+
 **Output:**
 - Working implementation
 - Task moved to "Testing" section
@@ -196,6 +228,9 @@ Claude: /plan
 → Reads task document
 → Implements step by step
 → Updates status to "Testing"
+
+/implement auto dark-mode
+→ Same as above, then auto-chains through test → document → ship
 ```
 
 ---
@@ -304,8 +339,10 @@ When `/plan` creates a task, it uses this structure:
 > **Status:** PLANNED | TESTING | APPROVED | SHIPPED
 > **Priority:** HIGH | MEDIUM | LOW
 > **Type:** feature | bugfix | enhancement | documentation | chore
+> **Version Impact:** minor | patch | major
 > **Created:** {Date}
 > **Platform:** Web
+> **Automation:** manual | auto
 
 ## Overview
 {2-3 sentence description}

@@ -96,9 +96,9 @@ Understand:
 - File changes needed
 - Implementation steps
 
-### 2. Invoke Specialized Skills (If Installed)
+### 2. Invoke Specialized Skills (MUST Invoke If Installed)
 
-If you have the recommended plugins installed, invoke them for best practices:
+If these plugins are installed, you MUST invoke them for best practices — do NOT skip them:
 
 For React/Next.js code:
 ```
@@ -110,7 +110,7 @@ For database queries, RLS, schema:
 /supabase-postgres-best-practices
 ```
 
-> **Note:** These plugins are optional. See "Recommended Plugins" section at the end.
+> **Important:** These plugins are only optional to *install*. Once installed, they are required and MUST be invoked. Do not skip them or treat them as unnecessary.
 
 ### 3. Update TASKS.md
 
@@ -144,10 +144,10 @@ The task document is your spec. Follow it step by step:
 2. **Step 2** → Complete → Verify
 3. Continue until all steps done
 
-### Invoke Skills as Needed (If Installed)
+### Invoke Skills When Applicable (MUST Use If Installed)
 
-| Situation | Skill (Optional) |
-|-----------|------------------|
+| Situation | Skill (Required If Installed) |
+|-----------|-------------------------------|
 | React/Next.js code | `/vercel-react-best-practices` |
 | Database work | `/supabase-postgres-best-practices` |
 | Need clarification | Ask user |
@@ -301,13 +301,13 @@ Use Task tool to spawn test agent with **model: haiku**:
 
 ---
 
-## Recommended Plugins (Optional)
+## Recommended Plugins (Install Separately)
 
-These plugins enhance the workflow but must be installed separately:
+These plugins must be installed separately. **Once installed, they MUST be invoked** — do not skip them:
 
-| Plugin | Install From | When Useful |
-|--------|--------------|-------------|
+| Plugin | Install From | When to Invoke |
+|--------|--------------|----------------|
 | `vercel-react-best-practices` | [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) | React/Next.js projects |
 | `supabase-postgres-best-practices` | [supabase/agent-skills](https://github.com/supabase/agent-skills) | Supabase/PostgreSQL projects |
 
-If installed, invoke with `/vercel-react-best-practices` or `/supabase-postgres-best-practices` during implementation.
+If installed, you MUST invoke with `/vercel-react-best-practices` or `/supabase-postgres-best-practices` during implementation.

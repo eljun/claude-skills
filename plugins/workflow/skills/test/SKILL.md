@@ -8,6 +8,29 @@ model: haiku
 
 > **Model:** haiku (straightforward test execution)
 
+## Prerequisites
+
+**Playwright MCP is REQUIRED.** Before running any tests, verify that `mcp__playwright__browser_navigate` is available as a tool. If Playwright MCP tools are not available:
+
+1. **STOP** - Do not proceed with testing
+2. **Notify the user** with this message:
+   ```
+   Playwright MCP is not configured. The /test skill requires browser automation to run E2E tests.
+
+   Add this to your project's .mcp.json:
+   {
+     "mcpServers": {
+       "playwright": {
+         "command": "npx",
+         "args": ["@anthropic-ai/mcp-playwright"]
+       }
+     }
+   }
+
+   Then restart Claude Code and re-run /test.
+   ```
+3. **Do NOT fall back** to curl commands or source code inspection as a substitute for browser testing. This produces misleading test reports.
+
 ## When to Use
 
 Invoke `/test {task-name}` when:
@@ -742,11 +765,11 @@ Include in report:
 | `/implement` | When tests fail, return to implement |
 | `/document` | After tests pass and user approves |
 
-## Recommended Plugins (Optional)
+## Recommended Plugins (Install Separately)
 
-These plugins enhance debugging but must be installed separately:
+These plugins must be installed separately. **Once installed, they MUST be invoked** — do not skip them:
 
-| Plugin | Install From | When Useful |
-|--------|--------------|-------------|
+| Plugin | Install From | When to Invoke |
+|--------|--------------|----------------|
 | `vercel-react-best-practices` | [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) | React/Next.js debugging |
 | `supabase-postgres-best-practices` | [supabase/agent-skills](https://github.com/supabase/agent-skills) | Database-related test issues |

@@ -334,11 +334,11 @@ Use Task tool: `Task({ subagent_type: "general-purpose", model: "haiku", prompt:
 | `/implement` | If issues found during doc review |
 | `/ship` | After documentation complete |
 
-## Recommended Plugins (Optional)
+## Recommended Plugins (Install Separately)
 
-These plugins provide reference patterns but must be installed separately:
+These plugins must be installed separately. **Once installed, they MUST be invoked** — do not skip them:
 
-| Plugin | Install From | When Useful |
-|--------|--------------|-------------|
+| Plugin | Install From | When to Invoke |
+|--------|--------------|----------------|
 | `vercel-react-best-practices` | [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) | Reference React patterns for docs |
 | `supabase-postgres-best-practices` | [supabase/agent-skills](https://github.com/supabase/agent-skills) | Reference database patterns for docs |

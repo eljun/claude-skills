@@ -369,11 +369,11 @@ The PR is ready for your review and merge.
 | `/document` | If docs need updates |
 | `/release` | After multiple items merged, create versioned release |
 
-## Recommended Plugins (Optional)
+## Recommended Plugins (Install Separately)
 
-These plugins help with code fixes but must be installed separately:
+These plugins must be installed separately. **Once installed, they MUST be invoked** — do not skip them:
 
-| Plugin | Install From | When Useful |
-|--------|--------------|-------------|
+| Plugin | Install From | When to Invoke |
+|--------|--------------|----------------|
 | `vercel-react-best-practices` | [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) | React/Next.js code fixes |
 | `supabase-postgres-best-practices` | [supabase/agent-skills](https://github.com/supabase/agent-skills) | Database-related fixes |

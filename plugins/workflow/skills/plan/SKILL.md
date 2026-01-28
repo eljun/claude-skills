@@ -94,9 +94,11 @@ Before creating the task document:
 - Find reusable components/hooks
 - Note potential pitfalls
 
-**Invoke specialized skills if installed:**
-- `/vercel-react-best-practices` - For React/Next.js optimization patterns (optional)
-- `/supabase-postgres-best-practices` - For database design and queries (optional)
+**Invoke specialized skills if installed (MUST invoke if available):**
+- `/vercel-react-best-practices` - For React/Next.js optimization patterns
+- `/supabase-postgres-best-practices` - For database design and queries
+
+> **Important:** If these skills are installed, you MUST invoke them. They are only optional to *install* — once installed, they are required to use.
 
 ### 3. Create Task Document
 
@@ -269,13 +271,13 @@ Spawning /implement with opus model...
 
 ---
 
-## Recommended Plugins (Optional)
+## Recommended Plugins (Install Separately)
 
-These plugins enhance the workflow but must be installed separately:
+These plugins must be installed separately. **Once installed, they MUST be invoked** — do not skip them:
 
-| Plugin | Install From | When Useful |
-|--------|--------------|-------------|
+| Plugin | Install From | When to Invoke |
+|--------|--------------|----------------|
 | `vercel-react-best-practices` | [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) | React/Next.js projects |
 | `supabase-postgres-best-practices` | [supabase/agent-skills](https://github.com/supabase/agent-skills) | Supabase/PostgreSQL projects |
 
-If installed, invoke with `/vercel-react-best-practices` or `/supabase-postgres-best-practices` during planning.
+If installed, you MUST invoke with `/vercel-react-best-practices` or `/supabase-postgres-best-practices` during planning.
