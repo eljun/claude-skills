@@ -58,6 +58,9 @@ TASKS.md updated to "Ready to Ship"
 
 ## Pre-Deployment Checklist
 
+**IMPORTANT — Context Efficiency:**
+The task document and test report contain all the context you need. Do NOT perform broad codebase exploration. Focus only on deployment-related checks below.
+
 ### 1. Verify Approval Status
 
 Check TASKS.md:

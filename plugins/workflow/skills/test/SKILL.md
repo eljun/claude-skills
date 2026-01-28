@@ -95,23 +95,29 @@ Re-running implementation with fixes...
 
 ## Pre-Testing Setup
 
-### 1. Read the Task Document
+### 1. Read the Task Document (Primary Context Source)
 
 ```
 docs/task/{task-name}.md
 ```
 
+**IMPORTANT — Context Efficiency:**
+The task document contains all the context you need from the planning phase. Do NOT perform broad codebase exploration. Only read the specific files referenced in the task document.
+
 Focus on:
 - Requirements checklist
 - Testing checklist (if provided)
 - Expected behavior
+- Files that were modified (listed in the task document)
 
 ### 2. Understand the Implementation
 
-Review the files that were changed:
+Review only the files that were changed (as listed in the task document):
 - What was created?
 - What was modified?
 - What are the entry points?
+
+**DO NOT** scan the entire codebase or read unrelated files. The task document already provides the necessary context.
 
 ### 3. Identify Test Scenarios
 

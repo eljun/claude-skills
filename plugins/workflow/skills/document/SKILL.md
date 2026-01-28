@@ -55,13 +55,16 @@ Updated files:
 
 ## Pre-Documentation Checklist
 
-### 1. Gather Context
+### 1. Gather Context (Primary Sources Only)
 
-Read these files:
+Read these files — they contain all the context you need:
 ```
 docs/task/{task-name}.md        - Implementation details
 docs/testing/{task-name}.md     - Test results & verification
 ```
+
+**IMPORTANT — Context Efficiency:**
+These two documents were created by the `/plan`, `/implement`, and `/test` agents which already analyzed the codebase. Do NOT perform broad codebase exploration. Only read specific source files if you need to verify implementation details for documentation accuracy.
 
 ### 2. Identify Documentation Needs
 

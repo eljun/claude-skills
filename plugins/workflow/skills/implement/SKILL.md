@@ -85,10 +85,20 @@ If `auto` is detected, update the task document header:
 > **Automation:** auto
 ```
 
-### 1. Read the Task Document
+### 1. Read the Task Document (Primary Context Source)
 ```
 docs/task/{task-name}.md
 ```
+
+**IMPORTANT — Context Efficiency:**
+The task document was created by the `/plan` agent, which already performed a thorough codebase analysis. The task document contains all the context you need: requirements, file paths, implementation steps, and architectural decisions.
+
+- **DO** trust the task document as your primary source of truth
+- **DO** read the specific files listed in the task document's "Files to Modify" or implementation steps
+- **DO NOT** perform broad codebase exploration (scanning directories, reading unrelated files, trying to "understand the entire codebase")
+- **DO NOT** re-analyze architecture that the plan agent already documented
+
+If the task document references specific files, read only those files. This keeps your context window efficient and avoids redundant exploration.
 
 Understand:
 - Requirements (must have vs nice to have)
