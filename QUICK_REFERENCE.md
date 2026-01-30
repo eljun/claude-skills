@@ -13,7 +13,7 @@
 
 # 3. Configure Playwright MCP for /test (required)
 # Add to your project's .mcp.json:
-# { "mcpServers": { "playwright": { "command": "npx", "args": ["@anthropic-ai/mcp-playwright"] } } }
+# { "mcpServers": { "playwright": { "command": "npx", "args": ["@playwright/mcp@latest"] } } }
 
 # 4. Create docs folders in your project
 mkdir -p docs/task docs/testing docs/features docs/guides docs/changelogs

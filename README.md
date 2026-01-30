@@ -95,7 +95,7 @@ For visual browser testing where you see each step in real-time.
   "mcpServers": {
     "playwright": {
       "command": "npx",
-      "args": ["@anthropic-ai/mcp-playwright"]
+      "args": ["@playwright/mcp@latest"]
     }
   }
 }
