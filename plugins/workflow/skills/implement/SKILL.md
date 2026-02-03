@@ -8,6 +8,55 @@ model: opus
 
 > **Model:** opus (complex coding requires advanced reasoning)
 
+## Command Flags
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--help` | `-h` | Show available commands and options |
+| `--version` | `-v` | Show workflow skills version |
+| `--multi` | `-m` | Multi-task mode: spawn parallel agents |
+| `auto` | | Enable auto-chain (test → document → ship) |
+
+### Flag Handling
+
+**On `-h` or `--help`:**
+```
+/implement - Implementation Agent
+
+Usage:
+  /implement {ID}                    Implement a single task
+  /implement auto {ID}               Implement with auto-chain enabled
+  /implement -m {ID1} {ID2} ...      Implement multiple tasks in parallel
+  /implement auto -m {ID1} {ID2}     Multi-task with auto-chain
+  /implement -h, --help              Show this help message
+  /implement -v, --version           Show version
+
+Arguments:
+  {ID}    Task ID (number) or task filename (e.g., 001-auth-jwt)
+
+Options:
+  auto    After implementation, automatically chain through:
+          test → document → ship
+  -m      Spawn parallel agents for each task
+
+Examples:
+  /implement 1                       # Implement task #1
+  /implement 001-auth-jwt            # Using task filename
+  /implement auto 1                  # With auto-chain
+  /implement -m 1 2 3                # Three tasks in parallel
+
+Next: /test {ID}
+```
+
+**On `-v` or `--version`:**
+Read `plugins/workflow/VERSION` and display:
+```
+Workflow Skills v{version}
+https://github.com/eljun/claude-skills
+```
+
+---
+
 ## When to Use
 
 Invoke `/implement {ID}` when:

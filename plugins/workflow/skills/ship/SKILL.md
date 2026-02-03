@@ -8,6 +8,52 @@ model: haiku
 
 > **Model:** haiku (scripted deployment commands)
 
+## Command Flags
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--help` | `-h` | Show available commands and options |
+| `--version` | `-v` | Show workflow skills version |
+
+### Flag Handling
+
+**On `-h` or `--help`:**
+```
+/ship - Deployment Agent
+
+Usage:
+  /ship {ID}                         Create PR for a task
+  /ship -h, --help                   Show this help message
+  /ship -v, --version                Show version
+
+Arguments:
+  {ID}    Task ID (number) or task filename (e.g., 001-auth-jwt)
+
+Pre-deployment checks:
+  - Build passes
+  - TypeScript compiles
+  - Lint passes
+
+Creates:
+  - Feature branch: feature/{ID}-{task-name}
+  - Pull Request with task documentation links
+
+Examples:
+  /ship 1                            # Ship task #1
+  /ship 001-auth-jwt                 # Using task filename
+
+Next: Merge PR, then /release
+```
+
+**On `-v` or `--version`:**
+Read `plugins/workflow/VERSION` and display:
+```
+Workflow Skills v{version}
+https://github.com/eljun/claude-skills
+```
+
+---
+
 ## When to Use
 
 Invoke `/ship {ID}` when:

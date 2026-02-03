@@ -1,9 +1,63 @@
 ---
 name: release
 description: Create versioned releases with consolidated changelogs. Gathers shipped items, generates CHANGELOG.md entry, creates git tag, and GitHub Release. Use after multiple /ship tasks are merged.
+model: haiku
 ---
 
 # /release - Release Management Agent
+
+## Command Flags
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--help` | `-h` | Show available commands and options |
+| `--version` | `-v` | Show workflow skills version |
+| `auto` | | Auto-determine version from task types |
+| `patch` | | Force patch increment |
+| `minor` | | Force minor increment |
+| `major` | | Force major increment |
+
+### Flag Handling
+
+**On `-h` or `--help`:**
+```
+/release - Release Management Agent
+
+Usage:
+  /release                           Auto-determine version (recommended)
+  /release auto                      Same as above
+  /release patch                     Force patch bump (v1.0.0 → v1.0.1)
+  /release minor                     Force minor bump (v1.0.0 → v1.1.0)
+  /release major                     Force major bump (v1.0.0 → v2.0.0)
+  /release v1.2.3                    Explicit version
+  /release -h, --help                Show this help message
+  /release -v, --version             Show version
+
+Version Auto-Detection:
+  - Reads "Version Impact" from each task document
+  - Any major → major bump
+  - Any minor → minor bump
+  - All patch → patch bump
+
+Creates:
+  - CHANGELOG.md entry
+  - Git tag
+  - GitHub Release
+
+Examples:
+  /release                           # Auto-detect version
+  /release minor                     # Force minor bump
+  /release v2.0.0                    # Explicit version
+```
+
+**On `-v` or `--version`:**
+Read `plugins/workflow/VERSION` and display:
+```
+Workflow Skills v{version}
+https://github.com/eljun/claude-skills
+```
+
+---
 
 ## When to Use
 

@@ -8,6 +8,54 @@ model: haiku
 
 > **Model:** haiku (straightforward test execution)
 
+## Command Flags
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--help` | `-h` | Show available commands and options |
+| `--version` | `-v` | Show workflow skills version |
+| `--ci` | | CI mode: headless testing with scripts |
+| `--cleanup` | | Delete test scripts after run (use with --ci) |
+
+### Flag Handling
+
+**On `-h` or `--help`:**
+```
+/test - Web E2E Testing Agent
+
+Usage:
+  /test {ID}                         Interactive mode (Playwright MCP)
+  /test --ci {ID}                    CI mode, keeps test scripts
+  /test --ci --cleanup {ID}          CI mode, deletes scripts after
+  /test --ci {ID} "instructions"     CI mode with custom instructions
+  /test -h, --help                   Show this help message
+  /test -v, --version                Show version
+
+Arguments:
+  {ID}    Task ID (number) or task filename (e.g., 001-auth-jwt)
+
+Options:
+  --ci        Headless mode using Playwright test runner
+  --cleanup   Delete test scripts after completion (with --ci)
+
+Examples:
+  /test 1                            # Interactive visual testing
+  /test 001-auth-jwt                 # Using task filename
+  /test --ci 1                       # CI mode, scripts kept
+  /test --ci --cleanup 1             # CI mode, scripts deleted
+
+Next: /document {ID}
+```
+
+**On `-v` or `--version`:**
+Read `plugins/workflow/VERSION` and display:
+```
+Workflow Skills v{version}
+https://github.com/eljun/claude-skills
+```
+
+---
+
 ## Prerequisites
 
 ### Playwright MCP Setup (One-Time)

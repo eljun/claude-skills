@@ -8,6 +8,48 @@ model: haiku
 
 > **Model:** haiku (templated documentation work)
 
+## Command Flags
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--help` | `-h` | Show available commands and options |
+| `--version` | `-v` | Show workflow skills version |
+
+### Flag Handling
+
+**On `-h` or `--help`:**
+```
+/document - Documentation Agent
+
+Usage:
+  /document {ID}                     Update docs for a task
+  /document -h, --help               Show this help message
+  /document -v, --version            Show version
+
+Arguments:
+  {ID}    Task ID (number) or task filename (e.g., 001-auth-jwt)
+
+Creates/Updates:
+  - docs/features/{feature}.md       Technical documentation
+  - docs/guides/{feature}.md         User guides (if user-facing)
+  - CLAUDE.md                        Project patterns (if needed)
+
+Examples:
+  /document 1                        # Document task #1
+  /document 001-auth-jwt             # Using task filename
+
+Next: /ship {ID}
+```
+
+**On `-v` or `--version`:**
+Read `plugins/workflow/VERSION` and display:
+```
+Workflow Skills v{version}
+https://github.com/eljun/claude-skills
+```
+
+---
+
 ## When to Use
 
 Invoke `/document {ID}` when:

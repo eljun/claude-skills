@@ -8,6 +8,46 @@ model: opus
 
 > **Model:** opus (complex planning requires advanced reasoning)
 
+## Command Flags
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--help` | `-h` | Show available commands and options |
+| `--version` | `-v` | Show workflow skills version |
+| `auto` | | Enable automated pipeline (implement → test → document → ship) |
+
+### Flag Handling
+
+**On `-h` or `--help`:**
+```
+/task - Task Planning Agent
+
+Usage:
+  /task                    Create a new task (manual mode)
+  /task auto               Create task with auto-pipeline enabled
+  /task -h, --help         Show this help message
+  /task -v, --version      Show version
+
+Options:
+  auto    After task approval, automatically chain through:
+          implement → test → document → ship
+
+Examples:
+  /task                    # Interactive task creation
+  /task auto               # Task with full automation
+
+Next: /implement {ID}
+```
+
+**On `-v` or `--version`:**
+Read `plugins/workflow/VERSION` and display:
+```
+Workflow Skills v{version}
+https://github.com/eljun/claude-skills
+```
+
+---
+
 ## When to Use
 
 Invoke `/task` when:
