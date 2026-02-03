@@ -46,9 +46,9 @@ Next: Merge PR, then /release
 ```
 
 **On `-v` or `--version`:**
-Read `plugins/workflow/VERSION` and display:
+Display:
 ```
-Workflow Skills v{version}
+Workflow Skills v1.4.1
 https://github.com/eljun/claude-skills
 ```
 
